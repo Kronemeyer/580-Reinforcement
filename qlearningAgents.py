@@ -59,7 +59,6 @@ class QLearningAgent(ReinforcementAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return a value of 0.0.
         """
-        "*** YOUR CODE HERE ***"
         actions = self.getLegalActions(state)
         if not actions:
           return 0.0
@@ -72,16 +71,18 @@ class QLearningAgent(ReinforcementAgent):
           are no legal actions, which is the case at the terminal state,
           you should return None.
         """
-        "*** YOUR CODE HERE ***"
         maxVal = 0.0
         retVal = None
-        for action in self.getLegalActions(state):
-          if retVal is None:
-            retVal = action
+        actions = self.getLegalActions(state)
+        if not actions:
+          return None
+        for action in actions:
           temp = self.getQValue(state,action)
           if temp > maxVal:
             maxVal = temp
             retVal = action
+        if retVal == None:
+          retVal = actions[0]
         return retVal
 
     def getAction(self, state):
@@ -113,7 +114,6 @@ class QLearningAgent(ReinforcementAgent):
           NOTE: You should never call this function,
           it will be called on your behalf
         """
-        "*** YOUR CODE HERE ***"
         Q = self.getQValue(state,action)
         nextStateActions = self.getLegalActions(nextState)
         nextStateQ = [self.getQValue(nextState,nextStateAction) for nextStateAction in nextStateActions]
