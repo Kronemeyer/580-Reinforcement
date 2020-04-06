@@ -26,7 +26,7 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
-import mdp, util
+import mdp, util, math
 
 from learningAgents import ValueEstimationAgent
 import collections
@@ -62,7 +62,15 @@ class ValueIterationAgent(ValueEstimationAgent):
     def runValueIteration(self):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
-
+        for unused in range(self.iterations):
+            vals = util.Counter()
+            for s in self.mdp.getStates():
+                val = -math.inf
+                for a in self.mdp.getPossibleActions(s):
+                    val = max(val, self.getQValue(s, a))                
+                if val != -math.inf:
+                    vals[s] = val
+            self.values = vals
 
     def getValue(self, state):
         """
@@ -77,6 +85,10 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
+        val = 0.0
+        for snext in self.mdp.getTransitionStatesAndProbs(state, action):
+            val += snext[1] * (self.mdp.getReward(state, action, snext[0]) +self. discount * self.values[snext[0]])
+        return val
         util.raiseNotDefined()
 
     def computeActionFromValues(self, state):
@@ -89,6 +101,14 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
+        retA = None
+        val = -math.inf
+        for a in self.mdp.getPossibleActions(state):
+            temp = self.getQValue(state, a)
+            if temp > val:
+                val = temp
+                retA = a
+        return retA
         util.raiseNotDefined()
 
     def getPolicy(self, state):
@@ -130,6 +150,17 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
+        states = self.mdp.getStates()
+        total = len(states)
+        for i in range(self.iterations):
+            index = i % total
+            if not self.mdp.isTerminal(states[index]):
+                s = states[index]
+                val = -math.inf
+                for a in self.mdp.getPossibleActions(s):
+                    val = max(val, self.getQValue(s, a))
+                if val != -math.inf:
+                    self.values[s] = val
 
 class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
     """
@@ -150,4 +181,3 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
-
