@@ -115,11 +115,11 @@ class QLearningAgent(ReinforcementAgent):
         """
         Q = self.getQValue(state,action)
         nextStateActions = self.getLegalActions(nextState)
-        nextStateQ = [self.getQValue(nextState,nextStateAction) for nextStateAction in nextStateActions]
-        if not nextStateQ:
+        nextStateQs = [self.getQValue(nextState,nextStateAction) for nextStateAction in nextStateActions]
+        if not nextStateQs:
           maxQ = 0.0
         else:
-          maxQ = max(nextStateQ)
+          maxQ = max(nextStateQs)
         sample = reward + self.discount*maxQ
         self.StateQValues[(state,action)] = (1-self.alpha)*Q + self.alpha*sample
 
@@ -183,15 +183,27 @@ class ApproximateQAgent(PacmanQAgent):
           Should return Q(state,action) = w * featureVector
           where * is the dotProduct operator
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        featureVectors = self.featExtractor.getFeatures(state, action)
+        qList = [self.weights[feature]*featureVectors[feature] for feature in featureVectors]
+        q = sum(qList)
+        if q == None:
+          return 0.0
+        return q
 
     def update(self, state, action, nextState, reward):
         """
            Should update your weights based on transition
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        featureVectors = self.featExtractor.getFeatures(state, action)
+        nextStateActions = self.getLegalActions(nextState)
+        nextStateQs = [self.getQValue(nextState,nextStateAction) for nextStateAction in nextStateActions]
+        if not nextStateQs:
+          maxQ = 0.0
+        else:
+          maxQ = max(nextStateQs)
+        difference = reward + self.discount*maxQ - self.getQValue(state, action)
+        for feature in featureVectors:
+            self.weights[feature] += self.alpha*difference * featureVectors[feature]
 
     def final(self, state):
         "Called at the end of each game."
